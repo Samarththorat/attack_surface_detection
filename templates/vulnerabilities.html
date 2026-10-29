@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vulnerability Assessment — Attack Surface Reduction</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <h1>CVE-Based Vulnerability Assessment</h1>
+    <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/dashboard" class="nav-link-btn">Overview</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <a href="/task-monitoring" class="nav-link-btn">Task Monitoring</a>
+        <a href="/vulnerabilities" class="nav-link-btn active-nav" aria-current="page">Vulnerabilities</a>
+        <a href="/analytics" class="nav-link-btn">Analytics</a>
+        <a href="/reports" class="nav-link-btn">Reports</a>
+    </nav>
+    <div class="topbar-actions">
+        <button id="refresh-inv-btn" class="btn-secondary" type="button">Refresh Software</button>
+        <button id="run-cve-scan-btn" class="btn-primary" type="button">Scan for CVEs</button>
+    </div>
+</header>
+
+<div id="loading" class="loading-banner" role="status" aria-live="polite">
+    Loading inventory and recorded assessment data...
+</div>
+<div id="scan-feedback" class="scan-feedback hidden" role="status" aria-live="polite"></div>
+
+<main id="vuln-content" class="hidden">
+
+    <section class="info-grid vuln-kpis" aria-label="Vulnerability assessment overview">
+        <div class="info-item">
+            <span class="info-label">Installed Applications</span>
+            <span class="info-value" id="kpi-total-software">0</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Total CVE Matches</span>
+            <span class="info-value" id="kpi-total-cves">0</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Critical / High CVEs</span>
+            <span class="info-value text-critical" id="kpi-crit-high">0</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Confirmed Version Matches</span>
+            <span class="info-value text-high" id="kpi-confirmed-matches">0</span>
+        </div>
+    </section>
+
+    <section class="source-status card" aria-labelledby="nvd-status-heading">
+        <div class="source-status-heading">
+            <div>
+                <h2 id="nvd-status-heading">NIST NVD 2.0 Source Status</h2>
+                <p id="nvd-source-state" class="source-state">Checking stored source and assessment status...</p>
+            </div>
+            <span id="nvd-cache-badge" class="status-chip">Cache status unknown</span>
+        </div>
+        <div class="source-status-grid">
+            <div><span>Last successful source request</span><strong id="nvd-last-success">Not recorded</strong></div>
+            <div><span>Rate-limit state</span><strong id="nvd-rate-limit">Not reported</strong></div>
+            <div><span>Assessment timestamp</span><strong id="nvd-assessment-time">No assessment recorded</strong></div>
+            <div><span>Assessment completeness</span><strong id="nvd-assessment-completeness">Not assessed</strong></div>
+        </div>
+        <p class="hint-text">Cached NVD data is not evidence of a current live connection. The inventory reads supported Windows Registry uninstall locations only.</p>
+    </section>
+
+    <section class="card">
+        <div class="section-toolbar">
+            <h2>Vulnerability Findings <span class="section-tag" id="vuln-count-tag">0 Recorded</span></h2>
+            <div class="table-controls">
+                <label class="sr-only" for="vuln-search">Search vulnerability findings</label>
+                <input type="search" id="vuln-search" placeholder="Search CVE, software, evidence..." >
+                <label class="sr-only" for="vuln-severity-filter">Filter by severity</label>
+                <select id="vuln-severity-filter">
+                    <option value="">All Severities</option>
+                    <option value="CRITICAL">Critical (9.0 - 10.0)</option>
+                    <option value="HIGH">High (7.0 - 8.9)</option>
+                    <option value="MEDIUM">Medium (4.0 - 6.9)</option>
+                    <option value="LOW">Low (0.1 - 3.9)</option>
+                </select>
+                <label class="sr-only" for="vuln-status-filter">Filter by assessment classification</label>
+                <select id="vuln-status-filter">
+                    <option value="">All Assessment Statuses</option>
+                    <option value="Confirmed Version Match">Confirmed Version Match</option>
+                    <option value="Potential Match">Potential Match</option>
+                    <option value="Insufficient Information">Insufficient Information</option>
+                    <option value="No Matching Vulnerability Found">No Matching Vulnerability Found</option>
+                    <option value="Assessment Incomplete">Assessment Incomplete</option>
+                    <option value="Vulnerability Source Unavailable">Vulnerability Source Unavailable</option>
+                    <option value="Test Fixture - Not Verified">Test Fixture - Not Verified</option>
+                </select>
+            </div>
+        </div>
+
+        <p class="hint-text">Severity, product identity, version-match confidence, and assessment completeness are distinct. A match does not establish exploitability.</p>
+
+        <div class="table-scroll">
+            <table class="vuln-table">
+                <thead>
+                    <tr>
+                        <th>CVE ID</th>
+                        <th>Vendor / Product</th>
+                        <th>Installed Version</th>
+                        <th>CVSS / Severity</th>
+                        <th>Software Identity Match</th>
+                        <th>Version Match Confidence</th>
+                        <th>Assessment Completeness</th>
+                        <th>Evidence</th>
+                        <th>References</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody id="vuln-table-body">
+                    <tr><td colspan="10" class="table-empty">Loading recorded findings...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-toolbar">
+            <h2>Windows Software Inventory <span class="section-tag" id="software-count-tag">0 Apps</span></h2>
+            <div class="table-controls">
+                <label class="sr-only" for="software-search">Search applications by name or publisher</label>
+                <input type="search" id="software-search" placeholder="Search application or publisher...">
+                <label class="sr-only" for="software-page-size">Rows per page</label>
+                <select id="software-page-size" aria-label="Inventory rows per page">
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                    <option value="100">100 per page</option>
+                </select>
+            </div>
+        </div>
+        <p class="hint-text">Read-only enumeration of supported Windows Registry uninstall locations (HKLM 64-bit, 32-bit, and HKCU). This inventory may not include all software; operating system hotfixes and patches are filtered.</p>
+
+        <div class="table-scroll">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th><button class="sort-button" type="button" data-sort="software_name">Application Name <span aria-hidden="true">↕</span></button></th>
+                        <th><button class="sort-button" type="button" data-sort="publisher">Publisher <span aria-hidden="true">↕</span></button></th>
+                        <th><button class="sort-button" type="button" data-sort="version">Version <span aria-hidden="true">↕</span></button></th>
+                        <th>Install Date</th>
+                        <th>Detected At</th>
+                        <th>Registry Details</th>
+                    </tr>
+                </thead>
+                <tbody id="software-table-body">
+                    <tr><td colspan="6" class="table-empty">Loading software inventory...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-controls" aria-label="Software inventory pagination">
+            <span id="software-page-summary" aria-live="polite">0 results</span>
+            <div>
+                <button id="software-page-prev" class="btn-secondary" type="button">Previous</button>
+                <button id="software-page-next" class="btn-secondary" type="button">Next</button>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/safe_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vulnerabilities.js') }}"></script>
+</body>
+</html>

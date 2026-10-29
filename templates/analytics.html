@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Analytics</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+<header class="topbar dashboard-topbar">
+    <h1>Security Analytics</h1>
+    <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/dashboard" class="nav-link-btn">Overview</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <a href="/task-monitoring" class="nav-link-btn">Task Monitoring</a>
+        <a href="/vulnerabilities" class="nav-link-btn">Vulnerabilities</a>
+        <a href="/analytics" class="nav-link-btn active-nav" aria-current="page">Analytics</a>
+        <a href="/reports" class="nav-link-btn">Reports</a>
+    </nav>
+</header>
+<main class="dashboard-main">
+    <p class="hint-text">Charts are derived from saved assessments and audit records. Incomplete or missing history is not filled with estimated values.</p>
+    <div id="analytics-error" class="scan-feedback error hidden" role="status"></div>
+    <section class="analytics-grid" aria-label="Historical security analytics">
+        <article class="card"><h2>Risk Trend</h2><div class="chart-container"><canvas id="analytics-risk-chart"></canvas></div><p id="analytics-risk-chart-message" class="hint-text" role="status"></p></article>
+        <article class="card"><h2>Findings by Severity</h2><div class="chart-container"><canvas id="analytics-severity-chart"></canvas></div><p id="analytics-severity-chart-message" class="hint-text" role="status"></p></article>
+        <article class="card"><h2>Findings by Category</h2><div class="chart-container"><canvas id="analytics-category-chart"></canvas></div><p id="analytics-category-chart-message" class="hint-text" role="status"></p></article>
+        <article class="card"><h2>Remediation Outcomes</h2><div class="chart-container"><canvas id="analytics-remediation-chart"></canvas></div><p id="analytics-remediation-chart-message" class="hint-text" role="status"></p></article>
+        <article class="card"><h2>Recorded Port Changes</h2><div class="chart-container"><canvas id="analytics-attack-chart"></canvas></div><p id="analytics-attack-chart-message" class="hint-text" role="status"></p></article>
+        <article class="card"><h2>Vulnerability Observations by Day</h2><div class="chart-container"><canvas id="analytics-vulnerability-chart"></canvas></div><p id="analytics-vulnerability-chart-message" class="hint-text" role="status"></p></article>
+    </section>
+    <section class="card">
+        <h2>Vulnerability Assessment Summary</h2>
+        <p id="vulnerability-analytics-summary" class="hint-text">Loading stored vulnerability assessment data…</p>
+    </section>
+    <section class="card">
+        <div class="section-heading">
+            <div>
+                <h2>Assessment History</h2>
+                <p class="hint-text">Saved assessments only. Compare two records for their measured changes.</p>
+            </div>
+        </div>
+        <p id="assessment-history-message" class="hint-text" role="status"></p>
+        <div class="table-scroll">
+            <table class="assessment-history-table">
+                <thead><tr><th>ID</th><th>Time</th><th>Listening Ports</th><th>Findings</th><th>Firewall</th><th>Risk Score</th><th>Risk Level</th></tr></thead>
+                <tbody id="assessment-history-body"><tr><td colspan="7">Loading saved assessments…</td></tr></tbody>
+            </table>
+        </div>
+    </section>
+    <section class="card">
+        <h2>Compare Assessments</h2>
+        <div class="compare-controls">
+            <label>Before assessment ID <input type="number" id="before-id" min="1"></label>
+            <label>After assessment ID <input type="number" id="after-id" min="1"></label>
+            <button id="compare-btn" type="button">Compare</button>
+        </div>
+        <div id="compare-results" class="grid-2" aria-live="polite"></div>
+    </section>
+    <details class="dashboard-details" id="latest-assessment-details">
+        <summary>Latest assessment risk details</summary>
+        <div class="details-content analytics-risk-details-grid">
+            <section class="card score-card">
+                <h2>Security Risk</h2>
+                <div id="analytics-risk-score" class="score-number">—</div>
+                <div id="analytics-risk-level" class="badge">—</div>
+                <p class="hint-text">Saved score from 0 to 100 and its recorded severity counts.</p>
+                <div class="progress-bar-track"><div id="analytics-risk-progress" class="progress-bar-fill"></div></div>
+                <div class="severity-pill-row">
+                    <span class="pill-count critical" id="analytics-pill-critical">—</span>
+                    <span class="pill-count high" id="analytics-pill-high">—</span>
+                    <span class="pill-count medium" id="analytics-pill-medium">—</span>
+                    <span class="pill-count low" id="analytics-pill-low">—</span>
+                    <span class="pill-count info" id="analytics-pill-info">—</span>
+                </div>
+            </section>
+            <section class="card">
+                <h2>Highest-Priority Concerns</h2>
+                <div id="analytics-risk-top-findings" class="findings-list"></div>
+                <h3>Recorded Mitigating Controls</h3>
+                <ul id="analytics-risk-mitigations" class="mitigation-list"></ul>
+            </section>
+            <section class="card analytics-risk-breakdown">
+                <h2>Risk Score Breakdown</h2>
+                <div class="chart-container"><canvas id="analytics-risk-breakdown-chart" aria-label="Recorded risk points by category"></canvas></div>
+                <p id="analytics-risk-breakdown-chart-message" class="hint-text" role="status"></p>
+            </section>
+        </div>
+    </details>
+    <details class="dashboard-details">
+        <summary>How to interpret these figures</summary>
+        <p id="analytics-methodology" class="hint-text"></p>
+    </details>
+</main>
+<script src="{{ url_for('static', filename='js/safe_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+</body>
+</html>

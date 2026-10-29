@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Overview — Attack Surface Reduction</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+<header class="topbar dashboard-topbar">
+    <h1>Security Overview</h1>
+    <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/dashboard" class="nav-link-btn active-nav" aria-current="page">Overview</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <a href="/task-monitoring" class="nav-link-btn">Task Monitoring</a>
+        <a href="/vulnerabilities" class="nav-link-btn">Vulnerabilities</a>
+        <a href="/analytics" class="nav-link-btn">Analytics</a>
+        <a href="/reports" class="nav-link-btn">Reports</a>
+    </nav>
+    <button id="rescan-btn" class="btn-primary" type="button">Run New Assessment</button>
+</header>
+
+<div id="loading" class="loading-banner" role="status" aria-live="polite">Loading the latest saved assessment…</div>
+<div id="scan-feedback" class="scan-feedback hidden" role="status" aria-live="polite"></div>
+
+<main id="dashboard-content" class="dashboard-main hidden">
+    <section class="monitoring-summary" aria-label="Monitoring health">
+        <div>
+            <span class="monitoring-label">Monitoring</span>
+            <strong id="live-monitor-text" class="monitoring-health">Checking status…</strong>
+            <span class="monitoring-meta">Last Successful Check: <strong id="live-last-check">Checking…</strong></span>
+        </div>
+    </section>
+
+    <p id="scan-completeness-status" class="assessment-state" role="status">No assessment has been loaded.</p>
+
+    <section class="dashboard-summary-grid" aria-label="Security summary">
+        <a class="summary-card" href="/dashboard#what-needs-attention">
+            <span class="summary-label">Security Risk</span>
+            <strong id="summary-risk-score" class="summary-value">—</strong>
+            <span id="summary-risk-note" class="summary-note">Latest saved assessment</span>
+        </a>
+        <a class="summary-card" href="/port-hardening">
+            <span class="summary-label">Listening Ports</span>
+            <strong id="summary-listening-sockets" class="summary-value">—</strong>
+            <span class="summary-note">Review exposure in Port Hardening</span>
+        </a>
+        <a class="summary-card" href="/dashboard#what-needs-attention">
+            <span class="summary-label">High-Priority Issues</span>
+            <strong id="summary-active-findings" class="summary-value">—</strong>
+            <span class="summary-note">Open P1 and P2 findings</span>
+        </a>
+        <a class="summary-card" href="/activity">
+            <span class="summary-label">Unresolved Alerts</span>
+            <strong id="summary-unresolved-alerts" class="summary-value">—</strong>
+            <span class="summary-note">Monitoring events not marked resolved</span>
+        </a>
+    </section>
+
+    <section class="card attention-section" id="what-needs-attention">
+        <div class="section-heading">
+            <div>
+                <h2>What Needs Attention?</h2>
+                <p class="hint-text">The highest-priority open findings from the latest assessment.</p>
+            </div>
+        </div>
+        <div id="attention-list" class="attention-list" aria-live="polite">
+            <p class="empty-state">Loading assessment findings…</p>
+        </div>
+    </section>
+
+    <section class="dashboard-chart-grid" aria-label="Security charts">
+        <div class="card">
+            <h2>Risk Distribution by Severity</h2>
+            <p class="hint-text">Findings in the latest saved assessment.</p>
+            <div class="chart-container"><canvas id="overview-severity-chart" aria-label="Latest findings by severity"></canvas></div>
+            <p id="overview-severity-chart-message" class="hint-text" role="status"></p>
+        </div>
+        <div class="card">
+            <h2>Historical Risk Trend</h2>
+            <p class="hint-text">Saved scores only; shown after at least two assessments.</p>
+            <div class="chart-container"><canvas id="trendChart" aria-label="Historical risk score trend"></canvas></div>
+            <p id="trendChart-message" class="hint-text" role="status"></p>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="section-heading">
+            <div>
+                <h2>Recent Activity</h2>
+                <p class="hint-text">Latest monitoring events. Full history and review actions are in Activity.</p>
+            </div>
+            <a class="btn-secondary" href="/activity">View All Activity</a>
+        </div>
+        <div class="table-scroll">
+            <table class="activity-table">
+                <thead><tr><th>Time</th><th>Event</th><th>Severity</th><th>Current Status</th></tr></thead>
+                <tbody id="dashboard-recent-activity-body">
+                    <tr><td colspan="4">Loading recent activity…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <details class="dashboard-details" id="assessment-tools">
+        <summary>More assessment details and tools</summary>
+        <div class="details-content dashboard-tools-grid">
+            <section class="card score-card">
+                <h2>Security Risk Details</h2>
+                <div id="risk-score-number" class="score-number">—</div>
+                <div id="risk-level-badge" class="badge">—</div>
+                <p class="hint-text">Project score from 0 to 100, based on the saved assessment.</p>
+                <div class="progress-bar-track"><div id="risk-progress-bar" class="progress-bar-fill"></div></div>
+                <div class="severity-pill-row">
+                    <span class="pill-count critical" id="pill-critical">0 Critical</span>
+                    <span class="pill-count high" id="pill-high">0 High</span>
+                    <span class="pill-count medium" id="pill-medium">0 Medium</span>
+                    <span class="pill-count low" id="pill-low">0 Low</span>
+                    <span class="pill-count info" id="pill-info">0 Info</span>
+                </div>
+            </section>
+            <section class="card">
+                <h2>Highest-Priority Concerns</h2>
+                <div id="top-findings-list"></div>
+                <h3>Recorded Mitigating Controls</h3>
+                <ul id="mitigating-factors-list" class="mitigation-list"></ul>
+            </section>
+            <section class="card">
+                <h2>System Information</h2>
+                <div id="system-info-grid" class="info-grid"></div>
+            </section>
+            <section class="card">
+                <h2>Recommendations</h2>
+                <div class="table-scroll"><table id="recommendations-table">
+                    <thead><tr><th>Priority</th><th>Finding</th><th>Risk</th><th>Recommended Action</th><th>Operational Impact</th></tr></thead>
+                    <tbody></tbody>
+                </table></div>
+            </section>
+            <section class="card">
+                <h2>Scheduled Security Assessments</h2>
+                <p class="hint-text">Choose what to assess and when. Optional vulnerability refresh and report generation remain available.</p>
+                <form id="schedule-form" class="compare-controls">
+                    <label><input type="checkbox" id="schedule-enabled"> Enable</label>
+                    <label>Interval (minutes) <input type="number" id="schedule-interval" min="5" max="10080" value="60"></label>
+                    <label><input type="checkbox" name="schedule-category" value="network" checked> Network</label>
+                    <label><input type="checkbox" name="schedule-category" value="security" checked> Security</label>
+                    <label><input type="checkbox" name="schedule-category" value="vulnerabilities"> Vulnerabilities</label>
+                    <label><input type="checkbox" id="schedule-refresh-vulns"> Refresh vulnerability data</label>
+                    <label><input type="checkbox" id="schedule-report"> Generate Excel report</label>
+                    <button type="submit" class="btn-primary">Save Schedule</button>
+                </form>
+                <p id="schedule-status" class="hint-text" aria-live="polite"></p>
+            </section>
+        </div>
+    </details>
+</main>
+
+<script src="{{ url_for('static', filename='js/safe_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

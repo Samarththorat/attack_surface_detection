@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoring Activity</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar dashboard-topbar">
+    <h1>Monitoring Activity</h1>
+    <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/dashboard" class="nav-link-btn">Overview</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <a href="/task-monitoring" class="nav-link-btn">Task Monitoring</a>
+        <a href="/vulnerabilities" class="nav-link-btn">Vulnerabilities</a>
+        <a href="/analytics" class="nav-link-btn">Analytics</a>
+        <a href="/reports" class="nav-link-btn">Reports</a>
+    </nav>
+</header>
+<main class="dashboard-main">
+    <section class="monitoring-summary" aria-label="Monitoring health">
+        <div>
+            <span class="monitoring-label">Monitoring Health</span>
+            <strong id="activity-monitor-health" class="monitoring-health">Checking status…</strong>
+            <span class="monitoring-meta">Last Successful Check: <strong id="activity-last-check">Checking…</strong></span>
+        </div>
+        <span id="activity-unresolved-count" class="badge-pill success">Checking unresolved alerts…</span>
+    </section>
+    <section class="card">
+        <div class="section-heading">
+            <div>
+                <h2>Event History</h2>
+                <p class="hint-text">Events are retained in the audit history. Acknowledging or reviewing an event does not resolve it.</p>
+            </div>
+            <button type="button" class="btn-secondary" id="activity-refresh">Refresh</button>
+        </div>
+        <div class="activity-filters" aria-label="Filter event history">
+            <label>Severity
+                <select id="activity-severity">
+                    <option value="">All severities</option>
+                    <option value="CRITICAL">Critical</option>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
+                    <option value="INFO">Info</option>
+                </select>
+            </label>
+            <label class="inline-checkbox"><input type="checkbox" id="activity-unresolved"> Unresolved only</label>
+        </div>
+        <div id="activity-feedback" class="scan-feedback hidden" role="status" aria-live="polite"></div>
+        <div class="table-scroll">
+            <table class="activity-history-table">
+                <thead><tr><th>Time</th><th>Severity</th><th>Event</th><th>Target</th><th>Evidence</th><th>Current Status</th><th>Actions</th></tr></thead>
+                <tbody id="activity-events-body"><tr><td colspan="7">Loading monitoring events…</td></tr></tbody>
+            </table>
+        </div>
+        <div class="pagination-controls">
+            <span id="activity-page-label">Loading…</span>
+            <div>
+                <button type="button" class="btn-secondary" id="activity-previous" disabled>Previous</button>
+                <button type="button" class="btn-secondary" id="activity-next" disabled>Next</button>
+            </div>
+        </div>
+    </section>
+</main>
+<script src="{{ url_for('static', filename='js/safe_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/activity.js') }}"></script>
+</body>
+</html>

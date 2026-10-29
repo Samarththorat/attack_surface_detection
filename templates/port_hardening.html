@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Port Hardening</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <h1>Port Hardening &amp; Attack Surface Reduction</h1>
+    <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/dashboard" class="nav-link-btn">Overview</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <a href="/port-hardening" class="nav-link-btn active-nav" aria-current="page">Port Hardening</a>
+        <a href="/task-monitoring" class="nav-link-btn">Task Monitoring</a>
+        <a href="/vulnerabilities" class="nav-link-btn">Vulnerabilities</a>
+        <a href="/analytics" class="nav-link-btn">Analytics</a>
+        <a href="/reports" class="nav-link-btn">Reports</a>
+    </nav>
+    <div class="topbar-actions">
+        <button id="refresh-btn">Refresh</button>
+    </div>
+</header>
+
+<div id="loading" class="loading-banner" role="status" aria-live="polite">
+    <span id="loading-message">Scanning ports, please wait...</span>
+    <button id="retry-btn" class="btn-secondary hidden" type="button">Retry</button>
+</div>
+
+<main id="ph-content">
+
+    <!-- Admin warning banner -->
+    <div id="admin-warning" class="admin-warning-banner ph-admin-warning hidden">
+        <span>⚠️</span>
+        <div>
+            <strong>Notice: Application is running without Administrator privileges.</strong>
+            <div>Firewall and service changes require Administrator privileges. Read-only port monitoring remains available.</div>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <section class="info-grid ph-summary-grid" id="risk-summary-grid" aria-live="polite">
+        <div class="info-item"><span class="label">Port analysis</span><span class="value">Loading...</span></div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card">
+        <div class="ph-filters" role="search">
+            <input type="search" id="search-input" aria-label="Search ports" placeholder="Search port, process, service...">
+            <select id="risk-filter" aria-label="Filter by risk">
+                <option value="">All Risk Levels</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+                <option value="SAFE">Safe</option>
+                <option value="UNKNOWN">Unknown</option>
+            </select>
+            <select id="protocol-filter" aria-label="Filter by protocol">
+                <option value="">All Protocols</option>
+                <option value="TCP">TCP</option>
+                <option value="UDP">UDP</option>
+            </select>
+            <select id="exposure-filter" aria-label="Filter by exposure">
+                <option value="">All Exposure Scopes</option>
+                <option value="LOOPBACK">Localhost only</option>
+                <option value="SPECIFIC_INTERFACE">Specific interface</option>
+                <option value="ALL_INTERFACES">All interfaces</option>
+                <option value="UNKNOWN">Unknown scope</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Ports table -->
+    <section class="card">
+        <h2>Listening Ports (<span id="ports-count">0</span>)</h2>
+        <div class="table-scroll">
+        <table id="ports-table">
+            <thead>
+                <tr>
+                    <th>Port</th><th>Protocol</th><th>Process</th><th>PID</th>
+                    <th>Service</th><th>Local Address</th><th>Exposure</th>
+                    <th>Risk</th><th>Confidence</th><th>Reason</th><th>Recommended</th><th>Firewall / Socket / Traffic</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody><tr><td colspan="13">Loading listening ports...</td></tr></tbody>
+        </table>
+        </div>
+    </section>
+
+    <!-- Remediation history -->
+    <section class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h2 style="margin: 0;">Verified Remediation History &amp; Audit Trail</h2>
+            <span class="section-tag" style="background: rgba(35, 134, 54, 0.2); color: #3fb950; border: 1px solid rgba(56, 139, 253, 0.2); padding: 2px 8px; border-radius: 4px; font-size: 11px;">Phase 3 Verified</span>
+        </div>
+        <p class="hint-text" style="color: var(--muted); font-size: 12px; margin-bottom: 12px;">
+            Independent before-and-after verification distinguishes between firewall-blocked traffic (socket still listening locally) and terminated services.
+        </p>
+        <div class="table-scroll">
+        <table id="remediation-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                    <th>Port/Protocol</th>
+                    <th>Previous</th>
+                    <th>New State</th>
+                    <th>Verification</th>
+                    <th>Score Delta</th>
+                    <th>Outcome</th>
+                </tr>
+            </thead>
+            <tbody><tr><td colspan="9">Loading remediation history...</td></tr></tbody>
+        </table>
+        </div>
+    </section>
+
+</main>
+
+<!-- Confirmation modal -->
+<div id="confirm-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3 id="modal-title">&#9888; Security Action</h3>
+        <div id="modal-body"></div>
+        <div class="modal-actions">
+            <button id="modal-cancel" class="btn-secondary">Cancel</button>
+            <button id="modal-confirm" class="btn-danger">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="{{ url_for('static', filename='js/safe_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/port_hardening.js') }}"></script>
+</body>
+</html>

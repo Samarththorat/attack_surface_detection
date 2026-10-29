@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Reports</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar dashboard-topbar">
+    <h1>Security Reports</h1>
+    <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/dashboard" class="nav-link-btn">Overview</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <a href="/task-monitoring" class="nav-link-btn">Task Monitoring</a>
+        <a href="/vulnerabilities" class="nav-link-btn">Vulnerabilities</a>
+        <a href="/analytics" class="nav-link-btn">Analytics</a>
+        <a href="/reports" class="nav-link-btn active-nav" aria-current="page">Reports</a>
+    </nav>
+</header>
+<main class="dashboard-main">
+    <section class="card report-intro">
+        <h2>Assessment Report</h2>
+        <p class="hint-text">Download the existing Excel workbook generated from saved assessment, vulnerability, monitoring, and remediation records.</p>
+        <a class="btn-primary report-download" href="/api/reports/excel">Download Excel Report</a>
+    </section>
+    <section class="card">
+        <h2>Report contents</h2>
+        <p>The workbook is created from data already stored by the application. It does not trigger a new scan or make changes to this computer.</p>
+        <p class="hint-text">For an up-to-date assessment, run a new assessment from the Overview before downloading.</p>
+        <a class="btn-secondary" href="/dashboard">Return to Overview</a>
+    </section>
+</main>
+</body>
+</html>

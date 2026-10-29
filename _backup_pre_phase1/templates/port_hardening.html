@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Port Hardening</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <h1>Port Hardening &amp; Attack Surface Reduction</h1>
+    <div class="topbar-actions">
+        <a href="/dashboard" class="nav-link-btn">Dashboard</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <button id="refresh-btn">Refresh</button>
+    </div>
+</header>
+
+<div id="loading" class="loading-banner">Scanning ports, please wait...</div>
+
+<main id="ph-content" class="hidden">
+
+    <!-- Admin warning banner -->
+    <div id="admin-warning" class="admin-warning-banner hidden">
+        <span>⚠️</span>
+        <div>
+            <strong>Notice: Application is running without Administrator privileges.</strong>
+            <div>Port blocking (Windows Firewall rules) and service control require Administrator elevation. Please restart your terminal with <em>Run as administrator</em> to apply firewall and service changes.</div>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <section class="info-grid" id="risk-summary-grid"></section>
+
+    <!-- Filters -->
+    <section class="card">
+        <div class="ph-filters">
+            <input type="text" id="search-input" placeholder="Search port, process, service...">
+            <select id="risk-filter">
+                <option value="">All Risk Levels</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+                <option value="SAFE">Safe</option>
+                <option value="UNKNOWN">Unknown</option>
+            </select>
+            <select id="protocol-filter">
+                <option value="">All Protocols</option>
+                <option value="TCP">TCP</option>
+                <option value="UDP">UDP</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Ports table -->
+    <section class="card">
+        <h2>Listening Ports (<span id="ports-count">0</span>)</h2>
+        <div class="table-scroll">
+        <table id="ports-table">
+            <thead>
+                <tr>
+                    <th>Port</th><th>Protocol</th><th>Process</th><th>PID</th>
+                    <th>Service</th><th>Local Address</th><th>Exposure</th>
+                    <th>Risk</th><th>Reason</th><th>Recommended</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+    </section>
+
+    <!-- Remediation history -->
+    <section class="card">
+        <h2>Remediation History</h2>
+        <div class="table-scroll">
+        <table id="remediation-table">
+            <thead>
+                <tr><th>Time</th><th>Action</th><th>Target</th><th>Port/Protocol</th><th>Previous</th><th>New</th><th>Status</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+    </section>
+
+</main>
+
+<!-- Confirmation modal -->
+<div id="confirm-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3 id="modal-title">&#9888; Security Action</h3>
+        <div id="modal-body"></div>
+        <div class="modal-actions">
+            <button id="modal-cancel" class="btn-secondary">Cancel</button>
+            <button id="modal-confirm" class="btn-danger">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="{{ url_for('static', filename='js/port_hardening.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Monitoring</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+<header class="topbar dashboard-topbar">
+    <h1>Task Monitoring</h1>
+    <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/dashboard" class="nav-link-btn">Overview</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <a href="/task-monitoring" class="nav-link-btn active-nav" aria-current="page">Task Monitoring</a>
+        <a href="/vulnerabilities" class="nav-link-btn">Vulnerabilities</a>
+        <a href="/analytics" class="nav-link-btn">Analytics</a>
+        <a href="/reports" class="nav-link-btn">Reports</a>
+    </nav>
+    <div class="topbar-actions">
+        <label class="task-refresh-control" for="task-refresh-interval">Refresh
+            <select id="task-refresh-interval">
+                <option value="5">5 seconds</option>
+                <option value="10">10 seconds</option>
+                <option value="30">30 seconds</option>
+                <option value="60">60 seconds</option>
+            </select>
+        </label>
+        <button id="task-refresh-button" class="btn-primary" type="button">Refresh now</button>
+    </div>
+</header>
+
+<main class="dashboard-main task-monitor-main">
+    <section class="task-monitor-status" aria-label="Task monitoring status">
+        <div>
+            <strong id="task-monitor-health">Connecting to local telemetry…</strong>
+            <p id="task-monitor-status-note" class="hint-text">Read-only process and system-resource measurements.</p>
+        </div>
+        <span>Last updated: <strong id="task-monitor-updated">Waiting for first sample</strong></span>
+    </section>
+    <div id="task-monitor-error" class="task-monitor-error hidden" role="alert"></div>
+    <div id="task-monitor-history-note" class="hint-text" role="status"></div>
+
+    <section class="task-metric-grid" aria-label="Current system resources">
+        <article class="info-item"><span class="label">CPU Utilization</span><strong id="task-cpu" class="value">Sampling…</strong><span class="metric-note">System-wide</span></article>
+        <article class="info-item"><span class="label">Memory Utilization</span><strong id="task-memory" class="value">Unavailable</strong><span id="task-memory-detail" class="metric-note"></span></article>
+        <article class="info-item"><span class="label">Disk Capacity</span><strong id="task-disk-capacity" class="value">Unavailable</strong><span id="task-disk-detail" class="metric-note"></span></article>
+        <article class="info-item"><span class="label">Disk Read / Write Activity</span><strong id="task-disk-io" class="value">Sampling…</strong><span id="task-disk-io-detail" class="metric-note">I/O throughput, not capacity</span></article>
+        <article class="info-item"><span class="label">Network Throughput</span><strong id="task-network" class="value">Sampling…</strong><span id="task-network-detail" class="metric-note">System-wide receive / send</span></article>
+        <article class="info-item"><span class="label">GPU Utilization</span><strong id="task-gpu" class="value">Unavailable</strong><span id="task-gpu-detail" class="metric-note"></span></article>
+        <article class="info-item"><span class="label">Running Processes</span><strong id="task-process-count" class="value">Unavailable</strong><span id="task-process-access" class="metric-note"></span></article>
+    </section>
+
+    <section class="task-charts-grid" aria-label="Stored resource trends">
+        <article class="card">
+            <h2>Recent Resource Trends</h2>
+            <p class="hint-text">Stored system samples only. Collection is limited to one sample per minute and retained for seven days.</p>
+            <div class="task-chart-container"><canvas id="task-resource-chart" aria-label="Stored CPU, memory, and disk capacity trends"></canvas></div>
+            <p id="task-resource-chart-message" class="hint-text" role="status"></p>
+        </article>
+        <article class="card">
+            <h2>Disk and Network Throughput</h2>
+            <p class="hint-text">Measured byte-counter differences; unavailable or initial intervals are not shown as zero.</p>
+            <div class="task-chart-container"><canvas id="task-throughput-chart" aria-label="Stored disk and network throughput trends"></canvas></div>
+            <p id="task-throughput-chart-message" class="hint-text" role="status"></p>
+        </article>
+    </section>
+
+    <section class="card task-process-card">
+        <div class="section-heading">
+            <div>
+                <h2>Running Processes</h2>
+                <p class="hint-text">Read-only snapshot. Per-process network attribution and GPU/energy measurements are not available from the configured telemetry source.</p>
+            </div>
+        </div>
+        <div class="task-process-controls">
+            <input id="task-process-search" type="search" aria-label="Search processes" placeholder="Search process name or PID">
+            <select id="task-process-state" aria-label="Filter process state">
+                <option value="">All states</option>
+                <option value="running">Running</option>
+                <option value="sleeping">Sleeping</option>
+                <option value="stopped">Stopped</option>
+                <option value="disk-sleep">Disk sleep</option>
+            </select>
+            <label for="task-process-sort">Sort by
+                <select id="task-process-sort">
+                    <option value="cpu">CPU usage</option>
+                    <option value="memory">Memory usage</option>
+                    <option value="name">Process name</option>
+                    <option value="pid">PID</option>
+                </select>
+            </label>
+        </div>
+        <div id="task-process-summary" class="hint-text">Loading process snapshot…</div>
+        <div class="table-scroll">
+            <table class="task-process-table">
+                <thead><tr><th>PID</th><th>Process</th><th>CPU</th><th>Memory</th><th>Disk Read / Write</th><th>Network</th><th>Started</th><th>State</th><th>User</th><th>Details</th></tr></thead>
+                <tbody id="task-process-body"><tr><td colspan="10">Loading observable processes…</td></tr></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<div id="task-process-details" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="task-details-title">
+    <section class="modal-box task-details-box">
+        <h2 id="task-details-title">Process details</h2>
+        <div id="task-details-body"></div>
+        <div class="modal-actions"><button id="task-details-close" class="btn-secondary" type="button">Close</button></div>
+    </section>
+</div>
+<script src="{{ url_for('static', filename='js/safe_render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/task_monitoring.js') }}"></script>
+</body>
+</html>

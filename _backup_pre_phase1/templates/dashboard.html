@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Security Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+    <h1>Attack Surface Reduction — Security Dashboard</h1>
+    <div class="topbar-actions">
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <a href="/attack-surface" class="nav-link-btn">Attack Surface</a>
+        <button id="rescan-btn">Run New Scan</button>
+    </div>
+</header>
+
+<div id="loading" class="loading-banner">Running scan, please wait...</div>
+
+<main id="dashboard-content" class="hidden">
+
+    <!-- Risk Score Section -->
+    <section class="grid-2">
+        <div class="card score-card">
+            <h2>Security Score</h2>
+            <div id="risk-score-number" class="score-number">--</div>
+            <div id="risk-level-badge" class="badge">--</div>
+            <div class="progress-bar-track">
+                <div id="risk-progress-bar" class="progress-bar-fill"></div>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Risk Breakdown</h2>
+            <canvas id="riskChart"></canvas>
+        </div>
+    </section>
+
+    <!-- System Info -->
+    <section class="card">
+        <h2>System Information</h2>
+        <div id="system-info-grid" class="info-grid"></div>
+    </section>
+
+    <!-- Firewall -->
+    <section class="card">
+        <h2>Firewall Status</h2>
+        <div id="firewall-status" class="info-grid"></div>
+    </section>
+
+    <!-- Listening Ports -->
+    <section class="card">
+        <h2>Listening Ports (<span id="ports-count">0</span>)</h2>
+        <table id="ports-table">
+            <thead>
+                <tr><th>Port</th><th>Protocol</th><th>Address</th><th>Process</th><th>PID</th><th>Risk Note</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <!-- Services -->
+    <section class="card">
+        <h2>Flagged Services for Review (<span id="services-count">0</span>)</h2>
+        <table id="services-table">
+            <thead>
+                <tr><th>Process</th><th>PID</th><th>Status</th><th>Ports</th><th>Reason</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <!-- Findings -->
+    <section class="card">
+        <h2>Security Findings</h2>
+        <div id="findings-list" class="findings-list"></div>
+    </section>
+
+    <!-- Recommendations -->
+    <section class="card">
+        <h2>Recommendations</h2>
+        <table id="recommendations-table">
+            <thead>
+                <tr><th>Finding</th><th>Risk</th><th>Reason</th><th>Recommended Action</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
+
+    <!-- Scan History -->
+    <section class="grid-2">
+        <div class="card">
+            <h2>Risk Score Trend</h2>
+            <canvas id="trendChart"></canvas>
+        </div>
+        <div class="card">
+            <h2>Scan History</h2>
+            <table id="history-table">
+                <thead>
+                    <tr><th>ID</th><th>Time</th><th>Ports</th><th>Findings</th><th>Firewall</th><th>Score</th><th>Level</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Before vs After Comparison -->
+    <section class="card">
+        <h2>Before vs After Comparison</h2>
+        <div class="compare-controls">
+            <label>Before scan ID: <input type="number" id="before-id" min="1"></label>
+            <label>After scan ID: <input type="number" id="after-id" min="1"></label>
+            <button id="compare-btn">Compare</button>
+        </div>
+        <div id="compare-results" class="grid-2" style="margin-top: 20px;"></div>
+    </section>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

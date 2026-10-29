@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Attack Surface Inventory</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <h1>Attack Surface Inventory</h1>
+    <div class="topbar-actions">
+        <a href="/dashboard" class="nav-link-btn">Dashboard</a>
+        <a href="/port-hardening" class="nav-link-btn">Port Hardening</a>
+        <button id="refresh-btn">Refresh</button>
+    </div>
+</header>
+
+<div id="loading" class="loading-banner">Building inventory, please wait...</div>
+
+<main id="as-content" class="hidden">
+
+    <!-- Network Interfaces -->
+    <section class="card">
+        <h2>Network Interfaces</h2>
+        <div id="interfaces-grid" class="info-grid"></div>
+    </section>
+
+    <!-- Firewall -->
+    <section class="card">
+        <h2>Firewall Status</h2>
+        <div id="firewall-grid" class="info-grid"></div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card">
+        <div class="ph-filters">
+            <input type="text" id="search-input" placeholder="Search port, process, service, status...">
+            <select id="risk-filter">
+                <option value="">All Risk Levels</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+                <option value="SAFE">Safe</option>
+                <option value="UNKNOWN">Unknown</option>
+            </select>
+            <select id="protocol-filter">
+                <option value="">All Protocols</option>
+                <option value="TCP">TCP</option>
+                <option value="UDP">UDP</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Listening Ports inventory -->
+    <section class="card">
+        <h2>Listening Ports (<span id="ports-count">0</span>)</h2>
+        <div class="table-scroll">
+        <table id="ports-table">
+            <thead>
+                <tr>
+                    <th>Port</th><th>Protocol</th><th>Process</th><th>Service</th>
+                    <th>Local Address</th><th>Exposure</th><th>Risk</th><th>Reason</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+    </section>
+
+    <!-- Potentially Exposed Services -->
+    <section class="card">
+        <h2>Potentially Exposed Services (<span id="exposed-count">0</span>)</h2>
+        <p class="hint-text">Ports that are network-reachable (not localhost-only) and classified as MEDIUM risk or higher.</p>
+        <div class="table-scroll">
+        <table id="exposed-table">
+            <thead>
+                <tr><th>Port</th><th>Protocol</th><th>Process</th><th>Service</th><th>Risk</th><th>Reason</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+    </section>
+
+    <!-- Running Services -->
+    <section class="card">
+        <h2>Running Services (<span id="services-count">0</span>)</h2>
+        <div class="table-scroll">
+        <table id="services-table">
+            <thead>
+                <tr><th>Process</th><th>PID</th><th>Status</th><th>Ports</th><th>Review Reason</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+    </section>
+
+    <!-- Security Configuration -->
+    <section class="card">
+        <h2>Security Configuration Findings</h2>
+        <div id="findings-list" class="findings-list"></div>
+    </section>
+
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="{{ url_for('static', filename='js/attack_surface.js') }}"></script>
+</body>
+</html>
